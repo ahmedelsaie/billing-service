@@ -1,0 +1,46 @@
+---
+version: '3.1'
+
+services:
+ 
+  db:
+    image: mysql:8
+    ports:
+      - "3309:3306"
+    volumes:
+      - data:/dbmysql
+      - mysql-datadir:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_ROOT_USER=root
+      - MYSQL_DATABASE=bill
+      - ALLOW_EMPTY_PASSWORD=yes
+      - TZ=Europe/Berlin
+
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+      
+  bill-service:
+    depends_on:
+      - 'db'
+      - 'redis'
+    ports: 
+      - "8080:8080"
+    build:
+      context: ./bill-service/
+      dockerfile: ./Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      API_KEY: 625618d566184b5eaf3e340cc3558104
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+
+volumes:
+  data:
+  mysql-datadir:
+
